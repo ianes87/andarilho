@@ -1,0 +1,14 @@
+# Empacotamento para o CurseForge (BigWigsMods/packager).
+# O addon fica na pasta Andarilho/ deste repositório.
+package-as: Andarilho
+
+move-folders:
+  Andarilho/Andarilho: Andarilho
+
+ignore:
+  - tools
+  - docs
+  - README.md
+  - CHANGELOG.md
+  - LICENSE
+  - .github

@@ -1,0 +1,11 @@
+## Interface: 16001, 11508, 11507
+## Title: |cff33cc66Andarilho|r
+## Notes: Conta a distância percorrida e converte de yards para metros e km. /andarilho
+## Notes-ptBR: Conta a distância percorrida e converte de yards para metros e km. /andarilho
+## Author: Ianes
+## Version: 1.0.0
+## X-Website: https://github.com/ianes87/Andarilho
+## X-Curse-Project-ID: 1794299
+## SavedVariables: AndarilhoDB
+
+Andarilho.lua

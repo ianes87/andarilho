@@ -1,0 +1,63 @@
+# Publica no CurseForge sozinho quando a versão do addon muda no GitHub.
+#
+# Como funciona: a cada envio para o main que mexe no Andarilho.toc, o
+# workflow lê o "## Version". Se ainda não existe a tag v<versão>, ele cria a
+# tag, monta o zip e manda para o CurseForge (e cria um Release no GitHub).
+# Também dá para publicar na mão enviando uma tag: git tag v1.0.1 && git push origin v1.0.1
+#
+# Antes de usar (uma vez só):
+# 1. Crie o projeto no CurseForge e coloque o número dele no Andarilho.toc:
+#      ## X-Curse-Project-ID: 123456
+# 2. Gere um token em authors.curseforge.com (API Tokens) e salve no GitHub em
+#    Settings > Secrets and variables > Actions, com o nome CF_API_KEY.
+# 3. Em Settings > Actions > General > Workflow permissions, marque "Read and write".
+name: Release
+
+on:
+  push:
+    branches: [ main ]
+    paths: [ "Andarilho/Andarilho.toc" ]
+    tags: [ "v*" ]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    env:
+      CF_API_KEY: ${{ secrets.CF_API_KEY }}
+      GITHUB_OAUTH: ${{ secrets.GITHUB_TOKEN }}
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Versão nova?
+        id: ver
+        run: |
+          V=$(grep -m1 '^## Version:' Andarilho/Andarilho.toc | sed 's/^## Version:[[:space:]]*//' | tr -d '\r')
+          echo "version=$V" >> "$GITHUB_OUTPUT"
+          if [ "${GITHUB_REF_TYPE}" = "tag" ]; then
+            echo "publish=true" >> "$GITHUB_OUTPUT"
+          elif git rev-parse "v$V" >/dev/null 2>&1; then
+            echo "A tag v$V já existe: nada para publicar."
+            echo "publish=false" >> "$GITHUB_OUTPUT"
+          else
+            git config user.name "github-actions"
+            git config user.email "github-actions@users.noreply.github.com"
+            git tag -a "v$V" -m "Andarilho $V"
+            git push origin "v$V"
+            # Uma tag criada aqui não dispara outro workflow, e o packager não
+            # publica a partir do main ("Found future tag"). Então este run
+            # chama o próprio workflow em cima da tag, e é esse que publica.
+            gh workflow run release.yml --ref "v$V"
+            echo "publish=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Empacotar e enviar para o CurseForge
+        if: steps.ver.outputs.publish == 'true'
+        uses: BigWigsMods/packager@v2
