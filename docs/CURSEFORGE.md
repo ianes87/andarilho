@@ -25,7 +25,7 @@
 ## Good to know
 
 - Counting starts when you install the addon, because the game does not keep this history.
-- Inside dungeons the game hides your position, so distance is calculated as speed × time.
+- Inside dungeons the game hides your position, so distance is estimated from base speed while you move.
 - Distance is horizontal, so climbing or falling does not add to it.
 
 ---

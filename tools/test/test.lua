@@ -20,7 +20,10 @@ UIParent=newObj(); GameTooltip=newObj(); BackdropTemplateMixin={}
 SlashCmdList={}
 local printed={}
 function print(s) table.insert(printed,s) end
-function GetUnitSpeed() return state.speed end
+local SECRET=setmetatable({},{__lt=function() error("attempt to compare a secret number value") end,__le=function() error("attempt to compare a secret number value") end})
+function issecretvalue(v) return v==SECRET end
+function GetUnitSpeed() return SECRET end -- igual ao WoW Forever
+function IsPlayerMoving() return state.speed>0 end
 function UnitPosition() if state.x==nil then return nil end return state.y,state.x,0,state.inst end
 function UnitOnTaxi() return state.taxi end
 function UnitInVehicle() return state.vehicle end
@@ -39,7 +42,12 @@ local function load_addon()
 end
 local driver=load_addon()
 local function char() return AndarilhoDB.chars["Ianix Mau-Teste"] end
-local function step(dt) driver.scripts.OnUpdate(driver,dt) end
+local wasMoving=false
+local function step(dt)
+  local now=state.speed>0
+  if now~=wasMoving then driver.scripts.OnEvent(driver, now and "PLAYER_STARTED_MOVING" or "PLAYER_STOPPED_MOVING"); wasMoving=now end
+  driver.scripts.OnUpdate(driver,dt)
+end
 local fails=0
 local function near(name,got,want,tol)
   local ok=math.abs(got-want)<=(tol or 0.5)
@@ -53,10 +61,11 @@ local function clear() local c=char(); c.foot,c.mount,c.swim=0,0,0 end
 
 state.speed=7; run(100,7); near("correr em linha 100s @7yd/s",char().foot,700,3)
 clear(); run(100,0); near("correr contra a parede",char().foot,0,0.01)
+clear(); state.speed=7; run(10,40); near("Charge/Blink rapido nao conta",char().foot,0,0.01)
 clear(); state.speed=0; run(60,20); near("parado em barco movendo",char().foot,0,0.01)
 clear(); state.speed=7; run(1,7); state.x=state.x+500; run(1,7); near("teleporte 500yd no meio",char().foot,14,3)
 clear(); state.inst=1; run(1,7); state.inst=0; near("troca de instancia",char().foot,7,3)
-clear(); state.x=nil; state.speed=7; run(100); near("masmorra: sem posicao",char().foot,700,3); state.x=0
+clear(); state.x=nil; state.speed=7; run(100); near("masmorra: estimativa 7yd/s",char().foot,700,3); state.x=0
 clear(); state.taxi=true; state.speed=30; run(50,30); state.taxi=false; near("grifo nao conta",char().foot+char().mount+char().swim,0,0.01)
 clear(); state.mount=true; state.speed=14; run(50,14); state.mount=false; near("montado: foot",char().foot,0,0.01); near("montado: mount",char().mount,700,3)
 clear(); state.swim=true; state.speed=4; run(50,4); state.swim=false; near("nadando",char().swim,200,2)

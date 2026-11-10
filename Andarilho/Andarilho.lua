@@ -1,13 +1,22 @@
 -- Andarilho: conta quanto o personagem já andou (yards, metros e km).
 --
--- Como mede: a cada 0,2 s compara a posição atual com a anterior. A velocidade
--- do jogo serve de limite, o que descarta teleporte e correr parado contra a
--- parede. Em masmorras o jogo esconde a posição; ali usa velocidade x tempo.
+-- Como mede: a cada 0,2 s compara a posição atual com a anterior, mas só
+-- enquanto o próprio jogador está se movendo (PLAYER_STARTED_MOVING), o que
+-- descarta barco, zepelim e elevador. Correr contra a parede não muda a posição,
+-- então não soma. Saltos maiores que a velocidade máxima possível (teleporte,
+-- Blink, Charge) são descartados. O WoW Forever trata a velocidade do jogador
+-- (GetUnitSpeed) como "secret value", então ela não é usada.
+-- Em masmorras o jogo esconde a posição; ali a distância é estimada pela
+-- velocidade base de cada tipo enquanto o jogador se move.
 
 local YARD_IN_METERS = 0.9144
 local TICK = 0.2            -- segundos entre medições
 local MAX_GAP = 1           -- intervalo maior que isso é tela de loading/travada
-local SPEED_TOLERANCE = 1.25 -- folga sobre a velocidade informada pelo jogo
+
+-- Velocidade máxima aceita (yd/s). Acima disso é teleporte e não conta.
+local MAX_SPEED = { foot = 16, mount = 26, swim = 16 }
+-- Velocidade estimada (yd/s) onde o jogo não informa a posição.
+local ESTIMATED_SPEED = { foot = 7, mount = 14, swim = 4.72 }
 
 local CATEGORIES = { "foot", "mount", "swim" }
 
@@ -42,6 +51,7 @@ if GetLocale() ~= "ptBR" then DECIMAL, THOUSANDS = ".", "," end
 local db, char
 local session = { foot = 0, mount = 0, swim = 0 }
 local lastX, lastY, lastInstance
+local moving = false
 local window, kmText, detailText, sessionText
 
 -- Formatação -----------------------------------------------------------------
@@ -63,38 +73,49 @@ local function FormatFull(yards)
     .. " m · " .. FormatNumber(Km(yards), 2) .. " km"
 end
 
-local function Sum(t)
-  return (t.foot or 0) + (t.mount or 0) + (t.swim or 0)
-end
-
 -- Medição --------------------------------------------------------------------
 
 local function ForgetPosition()
   lastX, lastY, lastInstance = nil, nil, nil
 end
 
+-- Valores que o jogo marca como secretos não podem ser comparados nem somados.
+local function Usable(...)
+  if not issecretvalue then return true end
+  for i = 1, select("#", ...) do
+    if issecretvalue((select(i, ...))) then return false end
+  end
+  return true
+end
+
 -- Yards andados desde a última medição.
-local function Measure(dt)
-  local speed = GetUnitSpeed("player") or 0
+local function Measure(dt, category)
   local y, x, _, instance = UnitPosition("player")
+  if not Usable(x, y, instance) then x, y, instance = nil, nil, nil end
   local prevX, prevY, prevInstance = lastX, lastY, lastInstance
   lastX, lastY, lastInstance = x, y, instance
 
-  if speed <= 0 then return 0 end -- barco, elevador e zepelim movem sem andar
-  local limit = speed * dt
-  if not x then return limit end  -- masmorra: posição indisponível
+  if not moving then return 0 end -- barco, elevador e zepelim movem sem andar
+  if not x then return ESTIMATED_SPEED[category] * dt end -- masmorra
   if not prevX or prevInstance ~= instance then return 0 end
 
   local dx, dy = x - prevX, y - prevY
   local moved = math.sqrt(dx * dx + dy * dy)
-  return math.min(moved, limit * SPEED_TOLERANCE)
+  if moved > MAX_SPEED[category] * dt then return 0 end -- teleporte
+  return moved
+end
+
+local function Flag(fn, ...)
+  if not fn then return false end
+  local value = fn(...)
+  return Usable(value) and value and true or false
 end
 
 local function CurrentCategory()
-  if UnitOnTaxi("player") then return nil end
-  if UnitInVehicle and UnitInVehicle("player") then return nil end
-  if IsSwimming() then return "swim" end
-  if IsMounted() then return "mount" end
+  if Flag(UnitOnTaxi, "player") then return nil end
+  if Flag(UnitInVehicle, "player") then return nil end
+  if Flag(IsSwimming) then return "swim" end
+  if Flag(IsMounted) then return "mount" end
   return "foot"
 end
 
@@ -102,7 +123,7 @@ local function Tick(dt)
   if dt > MAX_GAP then ForgetPosition(); return end
   local category = CurrentCategory()
   if not category then ForgetPosition(); return end
-  local yards = Measure(dt)
+  local yards = Measure(dt, category)
   if yards > 0 then
     char[category] = (char[category] or 0) + yards
     session[category] = session[category] + yards
@@ -291,10 +312,17 @@ end
 
 driver:RegisterEvent("PLAYER_LOGIN")
 driver:RegisterEvent("PLAYER_ENTERING_WORLD")
+driver:RegisterEvent("PLAYER_STARTED_MOVING")
+driver:RegisterEvent("PLAYER_STOPPED_MOVING")
 driver:SetScript("OnEvent", function(_, event)
   if event == "PLAYER_LOGIN" then
     Initialize()
+  elseif event == "PLAYER_STARTED_MOVING" then
+    moving = true
+  elseif event == "PLAYER_STOPPED_MOVING" then
+    moving = false
   else
+    moving = Flag(IsPlayerMoving)
     ForgetPosition()
   end
 end)

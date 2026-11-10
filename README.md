@@ -11,7 +11,7 @@
 
 <p align="center">
   <img alt="WoW Forever" src="https://img.shields.io/badge/WoW-Forever-33cc66">
-  <img alt="Versão 1.0.0" src="https://img.shields.io/badge/vers%C3%A3o-1.0.0-blue">
+  <img alt="Versão 1.0.1" src="https://img.shields.io/badge/vers%C3%A3o-1.0.1-blue">
   <img alt="Licença MIT" src="https://img.shields.io/badge/licen%C3%A7a-MIT-lightgrey">
 </p>
 
@@ -44,9 +44,9 @@
 
 ## Como a distância é medida
 
-A cada 0,2 segundo o addon compara a posição atual do personagem com a anterior, usando a velocidade informada pelo jogo como limite. É isso que descarta teleportes e o tempo correndo contra uma parede.
+A cada 0,2 segundo o addon compara a posição atual do personagem com a anterior, mas só enquanto você mesmo está se movendo. Por isso barco e zepelim não contam, e correr contra a parede também não, já que a posição não muda. Saltos maiores do que a velocidade máxima possível, como teleporte e Blink, são descartados.
 
-- **Dungeons:** o jogo não informa a posição, então o cálculo passa a ser velocidade × tempo.
+- **Dungeons:** o jogo não informa a posição, então a distância é estimada pela velocidade base (7 yd/s a pé, 14 montado) enquanto você se move.
 - **Altura:** a distância é horizontal, então subir ou cair não soma.
 - **Início da contagem:** o jogo não guarda o histórico, então só conta a partir da instalação.
 - **Conversão:** 1 yard = 0,9144 m.
