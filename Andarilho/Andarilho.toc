@@ -1,9 +1,9 @@
 ## Interface: 16001, 11508, 11507
 ## Title: |cff33cc66Andarilho|r
-## Notes: Conta a distância percorrida e converte de yards para metros e km. /andarilho
-## Notes-ptBR: Conta a distância percorrida e converte de yards para metros e km. /andarilho
+## Notes: Tracks distance walked and converts yards to meters and km, with a daily report. /andarilho
+## Notes-ptBR: Conta a distância percorrida (yards, metros e km), com relatório por dia. /andarilho
 ## Author: Ianes
-## Version: 1.0.1
+## Version: 1.1.0
 ## X-Website: https://github.com/ianes87/Andarilho
 ## X-Curse-Project-ID: 1794299
 ## SavedVariables: AndarilhoDB

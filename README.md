@@ -11,7 +11,7 @@
 
 <p align="center">
   <img alt="WoW Forever" src="https://img.shields.io/badge/WoW-Forever-33cc66">
-  <img alt="Versão 1.0.1" src="https://img.shields.io/badge/vers%C3%A3o-1.0.1-blue">
+  <img alt="Versão 1.1.0" src="https://img.shields.io/badge/vers%C3%A3o-1.1.0-blue">
   <img alt="Licença MIT" src="https://img.shields.io/badge/licen%C3%A7a-MIT-lightgrey">
 </p>
 
@@ -22,8 +22,10 @@
 - **Conta o que você realmente andou**, em yards, metros e km.
 - **Separa por tipo:** a pé, montado e nadando.
 - **Guarda por personagem** e também soma todos os personagens da conta.
-- **Mostra a sessão atual** ao lado do total.
-- **Janela pequena e móvel**, com o detalhe completo no tooltip.
+- **Mostra hoje e a sessão atual** ao lado do total.
+- **Relatório por dia**, com filtros de período, pesquisa por data, média e melhor dia.
+- **Janela pequena e móvel**, que minimiza para um ícone no minimapa.
+- **Português ou inglês**, automático pelo cliente do WoW ou à sua escolha.
 - **Não conta o que não é andar:** Taxi, teleporte, barco, zepelim e correr parado contra a parede.
 
 ## Instalação
@@ -37,10 +39,20 @@
 | Comando | O que faz |
 |---|---|
 | `/andarilho` | Mostra ou esconde a janela |
+| `/andarilho relatorio` | Abre o relatório por dia |
 | `/andarilho total` | Escreve os totais no chat |
+| `/andarilho idioma auto\|pt\|en` | Escolhe o idioma (automático segue o cliente do WoW) |
+| `/andarilho minimapa` | Mostra ou esconde o ícone do minimapa |
 | `/andarilho trancar` | Trava ou destrava a posição da janela |
 | `/andarilho centro` | Traz a janela de volta ao centro |
 | `/andarilho reset confirmar` | Zera a contagem deste personagem |
+
+## Minimapa e relatório
+
+- O botão **−** no canto da janela minimiza o Andarilho. Para abrir de novo, clique no ícone do minimapa.
+- **Botão direito** no ícone do minimapa (ou o ícone de nota na janela) abre o relatório.
+- No relatório dá para escolher **7 dias, 30 dias ou tudo**, alternar entre **este personagem** e **todos**, e pesquisar por data (`12/11`, `11/2026`) ou dia da semana (`sáb`).
+- O histórico por dia começa a ser gravado a partir da versão 1.1.0.
 
 ## Como a distância é medida
 
@@ -63,7 +75,7 @@ Para publicar uma versão nova, altere o `## Version` em `Andarilho/Andarilho.to
 
 ## English
 
-Andarilho is a **WoW Forever** addon that tracks how far your character has travelled and converts yards to meters and kilometers. It keeps separate totals for on foot, mounted and swimming, per character and across the account, and ignores flight paths, teleports, boats and running into walls. Use `/andarilho` to show or hide the window; the commands `total`, `lock`, `center` and `reset confirm` are also available.
+Andarilho is a **WoW Forever** addon that tracks how far your character has travelled and converts yards to meters and kilometers. It keeps separate totals for on foot, mounted and swimming, per character and across the account, and ignores flight paths, teleports, boats and running into walls. It also keeps a daily history with a searchable report, minimizes to a minimap icon, and follows the game client's language (English or Brazilian Portuguese) unless you pick one. Use `/andarilho` to show or hide the window; `report`, `total`, `language auto|pt|en`, `minimap`, `lock`, `center` and `reset confirm` are also available.
 
 ## Créditos
 
